@@ -1,4 +1,5 @@
 import { TopNav } from "@/components/TopNav";
+import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -28,6 +29,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1">
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

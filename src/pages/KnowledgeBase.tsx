@@ -43,7 +43,7 @@ const KnowledgeBase = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="min-h-screen bg-[image:var(--gradient-background)] p-6">
+    <div className="bg-[image:var(--gradient-background)] p-6 min-h-[calc(100vh-16rem)]">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Knowledge Base</h1>

@@ -23,7 +23,6 @@ const navItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "AI Services", url: "/ai-services", icon: Sparkles },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen },
   { title: "About", url: "/about", icon: Info },
 ];
 

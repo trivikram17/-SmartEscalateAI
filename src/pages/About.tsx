@@ -18,7 +18,7 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[image:var(--gradient-background)] p-6">
+    <div className="bg-[image:var(--gradient-background)] p-6 min-h-[calc(100vh-16rem)]">
       <div className="max-w-7xl mx-auto space-y-6">
         <Card className="p-8 shadow-[var(--shadow-elevated)] border-primary/10 text-center">
           <div className="flex justify-center mb-4">
