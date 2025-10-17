@@ -129,40 +129,40 @@ const Index = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="max-w-7xl mx-auto px-6 -mt-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-6 shadow-lg border-primary/10">
+      <div className="max-w-7xl mx-auto px-6 -mt-12 mb-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="p-8 border-0 shadow-xl backdrop-blur-sm bg-card/80 hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <Users className="w-7 h-7 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">10K+</p>
-                <p className="text-sm text-muted-foreground">Happy Users</p>
+                <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">10K+</p>
+                <p className="text-sm text-muted-foreground font-medium">Happy Users</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 shadow-lg border-primary/10">
+          <Card className="p-8 border-0 shadow-xl backdrop-blur-sm bg-card/80 hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <MessageSquare className="w-7 h-7 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">50K+</p>
-                <p className="text-sm text-muted-foreground">Conversations</p>
+                <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">50K+</p>
+                <p className="text-sm text-muted-foreground font-medium">Conversations</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 shadow-lg border-primary/10">
+          <Card className="p-8 border-0 shadow-xl backdrop-blur-sm bg-card/80 hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <Award className="w-7 h-7 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">95%</p>
-                <p className="text-sm text-muted-foreground">Success Rate</p>
+                <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-500 bg-clip-text text-transparent">95%</p>
+                <p className="text-sm text-muted-foreground font-medium">Success Rate</p>
               </div>
             </div>
           </Card>
