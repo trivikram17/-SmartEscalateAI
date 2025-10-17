@@ -41,32 +41,90 @@ const Index = () => {
   ];
 
   return (
-    <div className="bg-[image:var(--gradient-background)]">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                Welcome back, {userName}! 👋
+    <div className="bg-[image:var(--gradient-background)] min-h-screen">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white">
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 -left-4 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl animate-blob" />
+          <div className="absolute top-0 -right-4 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl animate-blob animation-delay-4000" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-28">
+          <div className="text-center space-y-8">
+            {/* Animated Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 animate-in fade-in slide-in-from-top duration-700">
+              <Sparkles className="w-4 h-4 animate-pulse" />
+              <span className="text-sm font-medium">Welcome {isGuest ? "Guest" : userName}!</span>
+              <Badge className="bg-white/30 text-white border-0 hover:bg-white/40">New</Badge>
+            </div>
+
+            {/* Main Heading */}
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom duration-1000">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+                Smart Support with
+                <span className="block bg-gradient-to-r from-yellow-200 via-pink-200 to-purple-200 bg-clip-text text-transparent">
+                  AI-Powered Intelligence
+                </span>
               </h1>
-              <p className="text-blue-100 text-lg">
-                {isGuest 
-                  ? "You're browsing as a guest. Start chatting to get instant AI-powered support!"
-                  : "How can I help you today? I'm here to resolve your issues quickly."}
+              <p className="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+                Experience the future of customer support. Get instant solutions, smart escalations, 
+                and 24/7 assistance powered by advanced AI technology.
               </p>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-                <Zap className="w-3 h-3 mr-1" />
-                AI Powered
-              </Badge>
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-                <Clock className="w-3 h-3 mr-1" />
-                24/7 Available
-              </Badge>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom duration-1000 delay-200">
+              <Button 
+                size="lg"
+                className="bg-white text-purple-600 hover:bg-gray-100 shadow-2xl hover:shadow-white/20 transition-all text-lg px-8 py-6 group"
+                onClick={() => navigate("/ai-services")}
+              >
+                <PlayCircle className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                Start Chatting Now
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm text-lg px-8 py-6"
+                onClick={() => navigate("/about")}
+              >
+                <Globe className="w-5 h-5 mr-2" />
+                Learn More
+              </Button>
+            </div>
+
+            {/* Feature Pills */}
+            <div className="flex flex-wrap gap-3 justify-center pt-8 animate-in fade-in duration-1000 delay-300">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                <Zap className="w-4 h-4 text-yellow-300" />
+                <span className="text-sm">AI Powered</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                <Shield className="w-4 h-4 text-green-300" />
+                <span className="text-sm">Secure & Private</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                <Clock className="w-4 h-4 text-blue-300" />
+                <span className="text-sm">24/7 Available</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                <Rocket className="w-4 h-4 text-pink-300" />
+                <span className="text-sm">Lightning Fast</span>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Wave Separator */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+            <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" 
+                  fill="currentColor" 
+                  className="text-background dark:text-background" />
+          </svg>
         </div>
       </div>
 
@@ -76,11 +134,11 @@ const Index = () => {
           <Card className="p-6 shadow-lg border-primary/10">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{tickets.filter(t => t.status === 'resolved').length}</p>
-                <p className="text-sm text-muted-foreground">Issues Resolved</p>
+                <p className="text-2xl font-bold">10K+</p>
+                <p className="text-sm text-muted-foreground">Happy Users</p>
               </div>
             </div>
           </Card>
@@ -88,11 +146,11 @@ const Index = () => {
           <Card className="p-6 shadow-lg border-primary/10">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{messages.length}</p>
-                <p className="text-sm text-muted-foreground">Messages Exchanged</p>
+                <p className="text-2xl font-bold">50K+</p>
+                <p className="text-sm text-muted-foreground">Conversations</p>
               </div>
             </div>
           </Card>
@@ -100,11 +158,11 @@ const Index = () => {
           <Card className="p-6 shadow-lg border-primary/10">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <Shield className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{tickets.length}</p>
-                <p className="text-sm text-muted-foreground">Active Tickets</p>
+                <p className="text-2xl font-bold">95%</p>
+                <p className="text-sm text-muted-foreground">Success Rate</p>
               </div>
             </div>
           </Card>
@@ -164,102 +222,87 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Quick Support Section */}
-      <div className="max-w-7xl mx-auto px-6 pb-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-1">Quick Support Chat</h2>
-          <p className="text-muted-foreground">Need help now? Start chatting with our AI assistant</p>
+      {/* Features Section */}
+      <div className="max-w-7xl mx-auto px-6 pb-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-1 text-center">Why Choose SmartEscalate AI?</h2>
+          <p className="text-muted-foreground text-center">Powerful features designed to enhance your support experience</p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_350px] gap-4" style={{ height: '500px' }}>
-          {/* Main Chat Area */}
-          <Card className="flex flex-col shadow-[var(--shadow-elevated)] border-primary/10 overflow-hidden">
-          {/* Header */}
-          <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[image:var(--gradient-primary)] shadow-lg">
-                <Bot className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-xl font-bold">AssistBot</h1>
-                <p className="text-sm text-muted-foreground">Your AI Support Assistant</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-success animate-pulse"></div>
-                <span className="text-xs text-muted-foreground">Online</span>
-              </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="p-6 border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4">
+              <Brain className="w-6 h-6 text-white" />
             </div>
-          </div>
+            <h3 className="text-lg font-bold mb-2">AI-Powered Intelligence</h3>
+            <p className="text-sm text-muted-foreground">
+              Advanced AI understands your issues and provides accurate solutions instantly
+            </p>
+          </Card>
 
-          {/* Messages */}
-          <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-              
-              {isTyping && <TypingIndicator />}
-              
-              {showQuickActions && messages.length === 1 && (
-                <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
-                  <p className="text-sm text-muted-foreground mb-3 text-center">
-                    Or select a common issue:
-                  </p>
-                  <QuickActions onActionClick={handleQuickActionClick} />
-                </div>
-              )}
+          <Card className="p-6 border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-white" />
             </div>
-          </ScrollArea>
+            <h3 className="text-lg font-bold mb-2">Lightning Fast</h3>
+            <p className="text-sm text-muted-foreground">
+              Get instant responses and resolve issues in seconds, not hours
+            </p>
+          </Card>
 
-          {/* Input Area */}
-          <div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
-            <div className="flex gap-2">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Describe your issue..."
-                className="flex-1 bg-background"
-                disabled={isTyping}
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!inputValue.trim() || isTyping}
-                className="bg-[image:var(--gradient-primary)] hover:opacity-90 transition-opacity"
+          <Card className="p-6 border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-lg font-bold mb-2">Secure & Reliable</h3>
+            <p className="text-sm text-muted-foreground">
+              Enterprise-grade security with 99.9% uptime guarantee
+            </p>
+          </Card>
+
+          <Card className="p-6 border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center mb-4">
+              <Target className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-lg font-bold mb-2">Smart Escalation</h3>
+            <p className="text-sm text-muted-foreground">
+              Automatically escalates complex issues to the right team members
+            </p>
+          </Card>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        <Card className="relative overflow-hidden border-primary/20">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
+          <div className="relative p-8 md:p-12 text-center">
+            <Star className="w-12 h-12 mx-auto mb-4 text-primary" />
+            <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+            <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Experience the future of customer support with AI-powered assistance. 
+              Start chatting now and see the difference.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button 
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 transition-opacity"
+                onClick={() => navigate("/ai-services")}
               >
-                <Send className="h-4 w-4" />
+                <PlayCircle className="w-5 h-5 mr-2" />
+                Try AI Chat Now
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                onClick={() => navigate("/about")}
+              >
+                Learn More
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
           </div>
         </Card>
-
-        {/* Tickets Sidebar */}
-        <Card className="flex flex-col shadow-[var(--shadow-elevated)] border-primary/10 overflow-hidden">
-          <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
-            <h2 className="text-lg font-semibold">Active Tickets</h2>
-            <p className="text-xs text-muted-foreground">Track your support requests</p>
-          </div>
-          
-          <ScrollArea className="flex-1 p-4">
-            {tickets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-3">
-                  <Bot className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  No tickets yet. I'll create one if we need to escalate your issue.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {tickets.map((ticket) => (
-                  <TicketCard key={ticket.id} ticket={ticket} />
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </Card>
-        </div>
       </div>
     </div>
   );
