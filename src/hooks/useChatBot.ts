@@ -3,6 +3,7 @@ import { Message } from "@/components/ChatMessage";
 import { Ticket } from "@/components/TicketCard";
 import { toast } from "sonner";
 import Groq from "groq-sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface ChatState {
   messages: Message[];
@@ -19,11 +20,10 @@ interface ChatState {
 // Initialize Groq client
 const getGroqClient = () => {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-  console.log("🔍 Debug - API Key check:", {
+  console.log("🔍 Debug - Groq API Key check:", {
     keyExists: !!apiKey,
     keyLength: apiKey?.length || 0,
     keyStart: apiKey?.substring(0, 8) + "...",
-    allEnvVars: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'))
   });
   
   if (!apiKey) {
@@ -33,6 +33,24 @@ const getGroqClient = () => {
   
   console.log("✅ Creating Groq client with API key");
   return new Groq({ apiKey, dangerouslyAllowBrowser: true });
+};
+
+// Initialize Gemini client
+const getGeminiClient = () => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  console.log("🔍 Debug - Gemini API Key check:", {
+    keyExists: !!apiKey,
+    keyLength: apiKey?.length || 0,
+    keyStart: apiKey?.substring(0, 8) + "...",
+  });
+  
+  if (!apiKey || apiKey === "your_gemini_api_key_here") {
+    console.warn("❌ Gemini API key not found. Please add VITE_GEMINI_API_KEY to your .env file");
+    return null;
+  }
+  
+  console.log("✅ Creating Gemini client with API key");
+  return new GoogleGenerativeAI(apiKey);
 };
 
 export function useChatBot() {
@@ -132,30 +150,11 @@ export function useChatBot() {
           description: "Our team will contact you soon",
         });
       } else {
-        // Use Groq API for intelligent responses
-        const groqClient = getGroqClient();
-        
-        if (!groqClient) {
-          response = "I apologize, but I'm unable to connect to my AI service at the moment. Please ensure the API key is configured correctly. Would you like me to create a support ticket for immediate assistance?";
-          addMessage({
-            role: "assistant",
-            content: response,
-            sentiment: sentiment === "urgent" ? "urgent" : undefined,
-          });
-          setState((prev) => ({
-            ...prev,
-            isTyping: false,
-            conversationContext: {
-              ...prev.conversationContext,
-              attemptCount: newAttemptCount,
-              startTime: prev.conversationContext.startTime || new Date(),
-            },
-          }));
-          return;
-        }
+        // Determine which AI provider to use
+        const aiProvider = import.meta.env.VITE_AI_PROVIDER || "groq";
+        console.log("🤖 Using AI provider:", aiProvider);
 
-        try {
-          const systemPrompt = `You are Smart Escalate AI, an expert IT support assistant. Your role is to analyze user issues and provide intelligent, step-by-step troubleshooting solutions.
+        const systemPrompt = `You are Smart Escalate AI, an expert IT support assistant. Your role is to analyze user issues and provide intelligent, step-by-step troubleshooting solutions.
 
 Current context:
 - Issue category: ${context.issueCategory || "Not specified"}
@@ -178,29 +177,96 @@ Response format:
 
 Keep responses concise (under 300 words) and professional.`;
 
-          const chatCompletion = await groqClient.chat.completions.create({
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...state.messages.slice(-6).map(msg => ({
-                role: (msg.role === "user" ? "user" : "assistant") as "user" | "assistant",
-                content: msg.content
-              })),
-              { role: "user" as const, content: userMessage }
-            ],
-            model: import.meta.env.VITE_GROQ_MODEL || "llama-3.1-70b-versatile",
-            temperature: 0.7,
-            max_tokens: 600,
-          });
+        try {
+          if (aiProvider === "gemini") {
+            // Use Google Gemini
+            const geminiClient = getGeminiClient();
+            
+            if (!geminiClient) {
+              response = "I apologize, but I'm unable to connect to my AI service (Gemini). Please ensure the API key is configured correctly. Would you like me to create a support ticket for immediate assistance?";
+              addMessage({
+                role: "assistant",
+                content: response,
+                sentiment: sentiment === "urgent" ? "urgent" : undefined,
+              });
+              setState((prev) => ({
+                ...prev,
+                isTyping: false,
+                conversationContext: {
+                  ...prev.conversationContext,
+                  attemptCount: newAttemptCount,
+                  startTime: prev.conversationContext.startTime || new Date(),
+                },
+              }));
+              return;
+            }
 
-          response = chatCompletion.choices[0]?.message?.content || "I apologize, but I'm having trouble generating a response right now. Could you please rephrase your question, or would you like me to create a support ticket?";
+            const model = geminiClient.getGenerativeModel({ 
+              model: import.meta.env.VITE_GEMINI_MODEL || "gemini-1.5-flash" 
+            });
+
+            // Build conversation history for Gemini
+            const conversationHistory = state.messages.slice(-6).map(msg => ({
+              role: msg.role === "user" ? "user" : "model",
+              parts: [{ text: msg.content }]
+            }));
+
+            const chat = model.startChat({
+              history: conversationHistory,
+              generationConfig: {
+                maxOutputTokens: 600,
+                temperature: 0.7,
+              },
+            });
+
+            const result = await chat.sendMessage(systemPrompt + "\n\nUser: " + userMessage);
+            response = result.response.text() || "I apologize, but I'm having trouble generating a response right now. Could you please rephrase your question, or would you like me to create a support ticket?";
+          } else {
+            // Use Groq (default)
+            const groqClient = getGroqClient();
+            
+            if (!groqClient) {
+              response = "I apologize, but I'm unable to connect to my AI service (Groq). Please ensure the API key is configured correctly. Would you like me to create a support ticket for immediate assistance?";
+              addMessage({
+                role: "assistant",
+                content: response,
+                sentiment: sentiment === "urgent" ? "urgent" : undefined,
+              });
+              setState((prev) => ({
+                ...prev,
+                isTyping: false,
+                conversationContext: {
+                  ...prev.conversationContext,
+                  attemptCount: newAttemptCount,
+                  startTime: prev.conversationContext.startTime || new Date(),
+                },
+              }));
+              return;
+            }
+
+            const chatCompletion = await groqClient.chat.completions.create({
+              messages: [
+                { role: "system", content: systemPrompt },
+                ...state.messages.slice(-6).map(msg => ({
+                  role: (msg.role === "user" ? "user" : "assistant") as "user" | "assistant",
+                  content: msg.content
+                })),
+                { role: "user" as const, content: userMessage }
+              ],
+              model: import.meta.env.VITE_GROQ_MODEL || "llama-3.3-70b-versatile",
+              temperature: 0.7,
+              max_tokens: 600,
+            });
+
+            response = chatCompletion.choices[0]?.message?.content || "I apologize, but I'm having trouble generating a response right now. Could you please rephrase your question, or would you like me to create a support ticket?";
+          }
         } catch (error: any) {
-          console.error("Groq API error details:", {
+          console.error(`${aiProvider} API error details:`, {
             error,
             message: error?.message,
             status: error?.status,
-            apiKey: import.meta.env.VITE_GROQ_API_KEY ? "Present (length: " + import.meta.env.VITE_GROQ_API_KEY.length + ")" : "Missing"
           });
-          response = `I'm experiencing technical difficulties connecting to my AI service. Error: ${error?.message || 'Unknown error'}. To ensure you get immediate help, I recommend creating a support ticket. Would you like me to do that for you?`;
+          response = `I'm experiencing technical difficulties connecting to my AI service (${aiProvider}). Error: ${error?.message || 'Unknown error'}. To ensure you get immediate help, I recommend creating a support ticket. Would you like me to do that for you?`;
         }
       }
 
