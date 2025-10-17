@@ -202,7 +202,11 @@ Keep responses concise (under 300 words) and professional.`;
             }
 
             const model = geminiClient.getGenerativeModel({ 
-              model: import.meta.env.VITE_GEMINI_MODEL || "gemini-1.5-flash" 
+              model: import.meta.env.VITE_GEMINI_MODEL || "gemini-1.5-flash",
+              systemInstruction: {
+                parts: [{ text: systemPrompt }],
+                role: "system"
+              }
             });
 
             // Build conversation history for Gemini
@@ -226,7 +230,6 @@ Keep responses concise (under 300 words) and professional.`;
                 maxOutputTokens: 600,
                 temperature: 0.7,
               },
-              systemInstruction: systemPrompt,
             });
 
             const result = await chat.sendMessage(userMessage);
