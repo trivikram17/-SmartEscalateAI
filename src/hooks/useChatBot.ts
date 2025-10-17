@@ -206,10 +206,19 @@ Keep responses concise (under 300 words) and professional.`;
             });
 
             // Build conversation history for Gemini
-            const conversationHistory = state.messages.slice(-6).map(msg => ({
-              role: msg.role === "user" ? "user" : "model",
-              parts: [{ text: msg.content }]
-            }));
+            // Filter to only include user/assistant pairs, and ensure it starts with user
+            const conversationHistory = state.messages
+              .slice(-6)
+              .filter(msg => msg.role === "user" || msg.role === "assistant")
+              .map(msg => ({
+                role: msg.role === "user" ? "user" : "model",
+                parts: [{ text: msg.content }]
+              }));
+
+            // Ensure history starts with a user message (Gemini requirement)
+            if (conversationHistory.length > 0 && conversationHistory[0].role !== "user") {
+              conversationHistory.shift();
+            }
 
             const chat = model.startChat({
               history: conversationHistory,
@@ -217,9 +226,10 @@ Keep responses concise (under 300 words) and professional.`;
                 maxOutputTokens: 600,
                 temperature: 0.7,
               },
+              systemInstruction: systemPrompt,
             });
 
-            const result = await chat.sendMessage(systemPrompt + "\n\nUser: " + userMessage);
+            const result = await chat.sendMessage(userMessage);
             response = result.response.text() || "I apologize, but I'm having trouble generating a response right now. Could you please rephrase your question, or would you like me to create a support ticket?";
           } else {
             // Use Groq (default)
