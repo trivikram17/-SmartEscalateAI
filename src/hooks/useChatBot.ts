@@ -203,10 +203,7 @@ Keep responses concise (under 300 words) and professional.`;
 
             const model = geminiClient.getGenerativeModel({ 
               model: import.meta.env.VITE_GEMINI_MODEL || "gemini-1.5-flash",
-              systemInstruction: {
-                parts: [{ text: systemPrompt }],
-                role: "system"
-              }
+              systemInstruction: systemPrompt
             });
 
             // Build conversation history for Gemini
