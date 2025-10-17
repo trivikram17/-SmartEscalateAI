@@ -1,4 +1,4 @@
-import { Bot, LayoutDashboard, Sparkles, BarChart3, BookOpen, Info, Moon, Sun, Menu, LogOut, User } from "lucide-react";
+import { Bot, LayoutDashboard, Sparkles, BarChart3, BookOpen, Info, Moon, Sun, Menu, LogOut, User, Settings, Bell, HelpCircle, UserCircle, Shield, CreditCard, Languages } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
@@ -114,7 +114,7 @@ export function TopNav({ isDarkMode, toggleTheme }: TopNavProps) {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-64" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{userName || "User"}</p>
@@ -122,7 +122,49 @@ export function TopNav({ isDarkMode, toggleTheme }: TopNavProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              
+              {/* Profile Section */}
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
+                <UserCircle className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/settings")}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              {/* Preferences */}
+              <DropdownMenuItem onClick={() => navigate("/notifications")}>
+                <Bell className="mr-2 h-4 w-4" />
+                <span>Notifications</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/billing")}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>Billing</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/privacy")}>
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Privacy</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              {/* Help & Support */}
+              <DropdownMenuItem onClick={() => navigate("/help")}>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                <span>Help & Support</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/knowledge-base")}>
+                <BookOpen className="mr-2 h-4 w-4" />
+                <span>Documentation</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              {/* Logout */}
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
@@ -166,11 +208,11 @@ export function TopNav({ isDarkMode, toggleTheme }: TopNavProps) {
                     </NavLink>
                   ))}
                 </nav>
-                {/* Mobile User Info and Logout */}
+                {/* Mobile User Info and Actions */}
                 <div className="border-t pt-4 mt-auto">
-                  <div className="px-4 py-2 mb-2">
+                  <div className="px-4 py-2 mb-3">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-10 w-10">
                         <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs">
                           {initials}
                         </AvatarFallback>
@@ -181,14 +223,51 @@ export function TopNav({ isDarkMode, toggleTheme }: TopNavProps) {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start px-4" 
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </Button>
+                  
+                  {/* Mobile Menu Actions */}
+                  <div className="space-y-1 px-2">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start px-4" 
+                      onClick={() => {
+                        navigate("/profile");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      Profile
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start px-4" 
+                      onClick={() => {
+                        navigate("/settings");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start px-4" 
+                      onClick={() => {
+                        navigate("/help");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      Help
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start px-4 text-red-600 dark:text-red-400 hover:text-red-600 dark:hover:text-red-400" 
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </Button>
+                  </div>
                 </div>
               </div>
             </SheetContent>
