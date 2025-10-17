@@ -1,18 +1,33 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { TopNav } from "@/components/TopNav";
+import { useState, useEffect } from "react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <main className="flex-1 relative">
-          <header className="sticky top-0 z-10 h-14 border-b border-border bg-card/50 backdrop-blur-sm flex items-center px-4">
-            <SidebarTrigger />
-          </header>
-          {children}
-        </main>
-      </div>
-    </SidebarProvider>
+    <div className="min-h-screen flex flex-col w-full">
+      <TopNav isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+      <main className="flex-1">
+        {children}
+      </main>
+    </div>
   );
 }
