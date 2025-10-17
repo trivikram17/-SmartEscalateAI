@@ -1,55 +1,14 @@
-import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChatMessage } from "@/components/ChatMessage";
-import { TicketCard } from "@/components/TicketCard";
-import { TypingIndicator } from "@/components/TypingIndicator";
-import { QuickActions } from "@/components/QuickActions";
-import { useChatBot } from "@/hooks/useChatBot";
 import { 
-  Send, Bot, Zap, Clock, Shield, Sparkles, TrendingUp, CheckCircle2,
-  BarChart3, BookOpen, MessageSquare, ArrowRight, Brain, Rocket
+  Bot, Zap, Clock, Shield, Sparkles, TrendingUp, CheckCircle2,
+  BarChart3, BookOpen, MessageSquare, ArrowRight, Brain, Rocket,
+  Users, Award, Target, PlayCircle, Star, Globe
 } from "lucide-react";
 
 const Index = () => {
-  const [inputValue, setInputValue] = useState("");
-  const [showQuickActions, setShowQuickActions] = useState(true);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const { messages, tickets, isTyping, sendMessage, handleQuickAction } = useChatBot();
-
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]");
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  }, [messages, isTyping]);
-
-  const handleSend = () => {
-    if (inputValue.trim()) {
-      sendMessage(inputValue);
-      setInputValue("");
-      setShowQuickActions(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleQuickActionClick = (action: string) => {
-    handleQuickAction(action);
-    setShowQuickActions(false);
-  };
-
   const userName = localStorage.getItem("userName") || "there";
   const isGuest = userName === "Guest User";
   const navigate = useNavigate();
