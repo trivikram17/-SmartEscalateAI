@@ -11,6 +11,13 @@ import KnowledgeBase from "./pages/KnowledgeBase";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Contact from "./pages/Contact";
+import Careers from "./pages/Careers";
+import Blog from "./pages/Blog";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
+import Compliance from "./pages/Compliance";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +40,13 @@ const App = () => (
           <Route path="/analytics" element={<ProtectedRoute><AppLayout><Analytics /></AppLayout></ProtectedRoute>} />
           <Route path="/knowledge-base" element={<ProtectedRoute><AppLayout><KnowledgeBase /></AppLayout></ProtectedRoute>} />
           <Route path="/about" element={<ProtectedRoute><AppLayout><About /></AppLayout></ProtectedRoute>} />
+          <Route path="/contact" element={<ProtectedRoute><AppLayout><Contact /></AppLayout></ProtectedRoute>} />
+          <Route path="/careers" element={<ProtectedRoute><AppLayout><Careers /></AppLayout></ProtectedRoute>} />
+          <Route path="/blog" element={<ProtectedRoute><AppLayout><Blog /></AppLayout></ProtectedRoute>} />
+          <Route path="/privacy-policy" element={<ProtectedRoute><AppLayout><PrivacyPolicy /></AppLayout></ProtectedRoute>} />
+          <Route path="/terms-of-service" element={<ProtectedRoute><AppLayout><TermsOfService /></AppLayout></ProtectedRoute>} />
+          <Route path="/cookie-policy" element={<ProtectedRoute><AppLayout><CookiePolicy /></AppLayout></ProtectedRoute>} />
+          <Route path="/compliance" element={<ProtectedRoute><AppLayout><Compliance /></AppLayout></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

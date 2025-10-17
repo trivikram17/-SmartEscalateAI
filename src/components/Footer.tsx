@@ -14,15 +14,15 @@ export function Footer() {
     ],
     company: [
       { name: "About Us", href: "/about" },
-      { name: "Contact", href: "#" },
-      { name: "Careers", href: "#" },
-      { name: "Blog", href: "#" },
+      { name: "Contact", href: "/contact" },
+      { name: "Careers", href: "/careers" },
+      { name: "Blog", href: "/blog" },
     ],
     legal: [
-      { name: "Privacy Policy", href: "#" },
-      { name: "Terms of Service", href: "#" },
-      { name: "Cookie Policy", href: "#" },
-      { name: "Compliance", href: "#" },
+      { name: "Privacy Policy", href: "/privacy-policy" },
+      { name: "Terms of Service", href: "/terms-of-service" },
+      { name: "Cookie Policy", href: "/cookie-policy" },
+      { name: "Compliance", href: "/compliance" },
     ],
     social: [
       { name: "GitHub", icon: Github, href: "https://github.com/trivikram17/-SmartEscalateAI" },
@@ -89,12 +89,12 @@ export function Footer() {
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -106,12 +106,12 @@ export function Footer() {
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
