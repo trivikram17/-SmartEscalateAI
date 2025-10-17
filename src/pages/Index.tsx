@@ -131,8 +131,9 @@ const Index = () => {
       {/* Stats Cards */}
       <div className="max-w-7xl mx-auto px-6 -mt-12 mb-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-8 border-0 shadow-xl backdrop-blur-sm bg-card/80 hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
-            <div className="flex items-center gap-4">
+          <div className="p-8 rounded-2xl border-none shadow-xl backdrop-blur-sm bg-card/95 hover:shadow-2xl hover:scale-105 transition-all duration-300 group overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20 dark:to-transparent" />
+            <div className="flex items-center gap-4 relative z-10">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <Users className="w-7 h-7 text-white" />
               </div>
@@ -141,10 +142,11 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground font-medium">Happy Users</p>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-8 border-0 shadow-xl backdrop-blur-sm bg-card/80 hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
-            <div className="flex items-center gap-4">
+          <div className="p-8 rounded-2xl border-none shadow-xl backdrop-blur-sm bg-card/95 hover:shadow-2xl hover:scale-105 transition-all duration-300 group overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20 dark:to-transparent" />
+            <div className="flex items-center gap-4 relative z-10">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <MessageSquare className="w-7 h-7 text-white" />
               </div>
@@ -153,10 +155,11 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground font-medium">Conversations</p>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-8 border-0 shadow-xl backdrop-blur-sm bg-card/80 hover:shadow-2xl hover:scale-105 transition-all duration-300 group">
-            <div className="flex items-center gap-4">
+          <div className="p-8 rounded-2xl border-none shadow-xl backdrop-blur-sm bg-card/95 hover:shadow-2xl hover:scale-105 transition-all duration-300 group overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20 dark:to-transparent" />
+            <div className="flex items-center gap-4 relative z-10">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <Award className="w-7 h-7 text-white" />
               </div>
@@ -165,7 +168,7 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground font-medium">Success Rate</p>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
 
