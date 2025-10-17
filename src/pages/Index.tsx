@@ -46,8 +46,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[image:var(--gradient-background)] flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl grid lg:grid-cols-[1fr_350px] gap-4 h-[90vh]">
+    <div className="bg-[image:var(--gradient-background)] p-6">
+      <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-[1fr_350px] gap-4" style={{ height: 'calc(100vh - 8rem)' }}>
         {/* Main Chat Area */}
         <Card className="flex flex-col shadow-[var(--shadow-elevated)] border-primary/10 overflow-hidden">
           {/* Header */}
