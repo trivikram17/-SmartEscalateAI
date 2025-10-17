@@ -19,10 +19,19 @@ interface ChatState {
 // Initialize Groq client
 const getGroqClient = () => {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+  console.log("🔍 Debug - API Key check:", {
+    keyExists: !!apiKey,
+    keyLength: apiKey?.length || 0,
+    keyStart: apiKey?.substring(0, 8) + "...",
+    allEnvVars: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'))
+  });
+  
   if (!apiKey) {
-    console.warn("Groq API key not found. Please add VITE_GROQ_API_KEY to your .env file");
+    console.warn("❌ Groq API key not found. Please add VITE_GROQ_API_KEY to your .env file");
     return null;
   }
+  
+  console.log("✅ Creating Groq client with API key");
   return new Groq({ apiKey, dangerouslyAllowBrowser: true });
 };
 
@@ -184,9 +193,14 @@ Keep responses concise (under 300 words) and professional.`;
           });
 
           response = chatCompletion.choices[0]?.message?.content || "I apologize, but I'm having trouble generating a response right now. Could you please rephrase your question, or would you like me to create a support ticket?";
-        } catch (error) {
-          console.error("Groq API error:", error);
-          response = "I'm experiencing technical difficulties connecting to my AI service. To ensure you get immediate help, I recommend creating a support ticket. Would you like me to do that for you?";
+        } catch (error: any) {
+          console.error("Groq API error details:", {
+            error,
+            message: error?.message,
+            status: error?.status,
+            apiKey: import.meta.env.VITE_GROQ_API_KEY ? "Present (length: " + import.meta.env.VITE_GROQ_API_KEY.length + ")" : "Missing"
+          });
+          response = `I'm experiencing technical difficulties connecting to my AI service. Error: ${error?.message || 'Unknown error'}. To ensure you get immediate help, I recommend creating a support ticket. Would you like me to do that for you?`;
         }
       }
 
