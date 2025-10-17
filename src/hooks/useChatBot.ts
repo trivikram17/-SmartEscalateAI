@@ -126,50 +126,67 @@ export function useChatBot() {
         // Use Groq API for intelligent responses
         const groqClient = getGroqClient();
         
-        if (groqClient) {
-          try {
-            const systemPrompt = `You are a helpful IT support assistant named Smart Escalate AI. Your role is to help users troubleshoot technical issues. 
-            
+        if (!groqClient) {
+          response = "I apologize, but I'm unable to connect to my AI service at the moment. Please ensure the API key is configured correctly. Would you like me to create a support ticket for immediate assistance?";
+          addMessage({
+            role: "assistant",
+            content: response,
+            sentiment: sentiment === "urgent" ? "urgent" : undefined,
+          });
+          setState((prev) => ({
+            ...prev,
+            isTyping: false,
+            conversationContext: {
+              ...prev.conversationContext,
+              attemptCount: newAttemptCount,
+              startTime: prev.conversationContext.startTime || new Date(),
+            },
+          }));
+          return;
+        }
+
+        try {
+          const systemPrompt = `You are Smart Escalate AI, an expert IT support assistant. Your role is to analyze user issues and provide intelligent, step-by-step troubleshooting solutions.
+
 Current context:
 - Issue category: ${context.issueCategory || "Not specified"}
 - Device type: ${context.deviceType || "Not specified"}
 - Attempt count: ${newAttemptCount}
+- Conversation history available: ${state.messages.length} messages
 
-Guidelines:
-- Be concise and helpful
-- Ask clarifying questions if needed
-- Provide step-by-step troubleshooting
-- Be empathetic and professional
-- If the issue seems complex or user is frustrated, suggest creating a support ticket`;
+Your response guidelines:
+1. **Extract Information**: Identify the specific problem from the user's description
+2. **Provide Clear Steps**: Give numbered, actionable troubleshooting steps
+3. **Be Specific**: Tailor solutions to the exact issue and device type mentioned
+4. **Ask Smart Questions**: If you need more details, ask targeted questions
+5. **Progressive Support**: Start with simple fixes, then move to advanced solutions
+6. **Escalation Awareness**: If the issue seems complex or requires human intervention, suggest creating a support ticket
 
-            const chatCompletion = await groqClient.chat.completions.create({
-              messages: [
-                { role: "system", content: systemPrompt },
-                ...state.messages.slice(-5).map(msg => ({
-                  role: msg.role,
-                  content: msg.content
-                })),
-                { role: "user", content: userMessage }
-              ],
-              model: import.meta.env.VITE_GROQ_MODEL || "llama-3.1-70b-versatile",
-              temperature: 0.7,
-              max_tokens: 500,
-            });
+Response format:
+- Start with acknowledging the specific issue
+- Provide 3-5 clear, numbered troubleshooting steps
+- End with a follow-up question to check progress
 
-            response = chatCompletion.choices[0]?.message?.content || "I apologize, but I'm having trouble generating a response. Could you please rephrase your question?";
-          } catch (error) {
-            console.error("Groq API error:", error);
-            response = "I'm having trouble connecting to my knowledge base. Let me try to help with some general troubleshooting steps.\n\n1. First, please try restarting your device\n2. Check if your software is up to date\n3. Verify your internet connection is stable\n\nHave you tried any of these steps already?";
-          }
-        } else {
-          // Fallback responses if no API key
-          if (!context.issueCategory) {
-            response = "Thank you for that information. To help you better, could you tell me which category best describes your issue?\n\n• Network/Connectivity\n• Software/Application\n• Hardware/Device\n• Account/Access\n• Other";
-          } else if (!context.deviceType) {
-            response = "Got it. What type of device are you experiencing this issue on? (e.g., Windows PC, Mac, iPhone, Android, etc.)";
-          } else {
-            response = `Let's try some troubleshooting steps:\n\n1. First, please try restarting your ${context.deviceType}\n2. Check if your software is up to date\n3. Verify your internet connection is stable\n\nHave you tried any of these steps already?`;
-          }
+Keep responses concise (under 300 words) and professional.`;
+
+          const chatCompletion = await groqClient.chat.completions.create({
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...state.messages.slice(-6).map(msg => ({
+                role: msg.role,
+                content: msg.content
+              })),
+              { role: "user", content: userMessage }
+            ],
+            model: import.meta.env.VITE_GROQ_MODEL || "llama-3.1-70b-versatile",
+            temperature: 0.7,
+            max_tokens: 600,
+          });
+
+          response = chatCompletion.choices[0]?.message?.content || "I apologize, but I'm having trouble generating a response right now. Could you please rephrase your question, or would you like me to create a support ticket?";
+        } catch (error) {
+          console.error("Groq API error:", error);
+          response = "I'm experiencing technical difficulties connecting to my AI service. To ensure you get immediate help, I recommend creating a support ticket. Would you like me to do that for you?";
         }
       }
 
