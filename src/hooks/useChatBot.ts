@@ -182,10 +182,10 @@ Keep responses concise (under 300 words) and professional.`;
             messages: [
               { role: "system", content: systemPrompt },
               ...state.messages.slice(-6).map(msg => ({
-                role: msg.role,
+                role: (msg.role === "user" ? "user" : "assistant") as "user" | "assistant",
                 content: msg.content
               })),
-              { role: "user", content: userMessage }
+              { role: "user" as const, content: userMessage }
             ],
             model: import.meta.env.VITE_GROQ_MODEL || "llama-3.1-70b-versatile",
             temperature: 0.7,
