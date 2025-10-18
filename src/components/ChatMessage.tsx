@@ -10,6 +10,7 @@ export interface Message {
   content: string;
   timestamp: Date;
   sentiment?: "neutral" | "frustrated" | "urgent";
+  isStreaming?: boolean;
   metadata?: {
     category?: string;
     priority?: string;
@@ -50,7 +51,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
             : "bg-card border border-border"
         )}
       >
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+          {message.content}
+          {message.isStreaming && (
+            <span className="inline-block w-1.5 h-4 ml-1 bg-current animate-pulse" />
+          )}
+        </p>
         
         {message.metadata && (
           <div className="flex gap-2 flex-wrap mt-1">

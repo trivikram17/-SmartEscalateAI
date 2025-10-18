@@ -49,7 +49,7 @@ dark/light mode, login system, and Groq API integration
 
 ### Modified Files (5 total):
 1. `.gitignore` - Added .env protection
-2. `index.html` - Removed Lovable references
+2. `index.html` - Cleaned up legacy references
 3. `src/App.tsx` - Added authentication and routing
 4. `src/components/AppLayout.tsx` - New layout with theme
 5. `src/hooks/useChatBot.ts` - Groq API integration

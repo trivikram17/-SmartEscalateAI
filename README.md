@@ -1,73 +1,86 @@
-# Welcome to your Lovable project
+# Smart Escalate AI
 
-## Project info
+An AI-assisted customer support and ticket escalation app built with Vite, React, TypeScript, Tailwind, and shadcn/ui. It features live streaming chat (Groq/Gemini), nuanced priority/escalation logic, and a confirmation-gated ticket workflow with optional email notifications via a small Node/Express API.
 
-**URL**: https://lovable.dev/projects/c1c6e625-4dc3-498a-85cc-14d338e44a81
+## Features
 
-## How can I edit this code?
+- Streaming AI chat (Groq and Gemini)
+- Friendly, concise, non-repetitive responses
+- Progress-aware escalation (ask for a ticket only after many failed attempts)
+- Ticket confirmation step with conversation summary
+- Email workflow (Express + Nodemailer) to route tickets to vendor/company addresses
+- Clean UI with shadcn/ui and Tailwind
 
-There are several ways of editing your application.
+## Requirements
 
-**Use Lovable**
+- Node.js 18+
+- npm
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c1c6e625-4dc3-498a-85cc-14d338e44a81) and start prompting.
+## Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+1) Install dependencies
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```powershell
+npm install
 ```
 
-**Edit a file directly in GitHub**
+2) Configure environment variables in .env
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```env
+# AI providers (optional, enable what you use)
+VITE_GROQ_API_KEY=your_groq_key
+VITE_GEMINI_API_KEY=your_gemini_key
 
-**Use GitHub Codespaces**
+# Email server (required for email sending)
+EMAIL_API_PORT=3001
+SMTP_HOST=smtp.yourhost.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_user
+SMTP_PASS=your_password
+EMAIL_FROM="Smart Escalate AI <no-reply@yourdomain.com>"
+EMAIL_FALLBACK_TO=support@yourdomain.com
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+3) Run the dev servers
 
-## What technologies are used for this project?
+During development, the Vite dev server proxies /api to the email server.
 
-This project is built with:
+```powershell
+# Start both servers
+npm run dev:full
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Or run separately
+npm run server; npm run dev
+```
 
-## How can I deploy this project?
+Vite runs at http://localhost:8080. Email API runs at http://localhost:3001.
 
-Simply open [Lovable](https://lovable.dev/projects/c1c6e625-4dc3-498a-85cc-14d338e44a81) and click on Share -> Publish.
+## Email Workflow
 
-## Can I connect a custom domain to my Lovable project?
+When a ticket is confirmed, the app compiles a summary (last ~20 messages) and POSTs it to /api/sendTicketEmail. The Express server sends it via Nodemailer using your SMTP settings. If vendor routing can’t be determined, EMAIL_FALLBACK_TO is used.
 
-Yes, you can!
+## Scripts
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- dev: Start Vite only
+- server: Start the email API server
+- dev:full: Run both concurrently
+- build: Build the app
+- preview: Preview a production build
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Tech Stack
+
+- React 18 + TypeScript
+- Vite 5
+- Tailwind CSS + shadcn/ui
+- Groq SDK, Google Generative AI (optional)
+- Express + Nodemailer for email
+
+## Notes
+
+- Set real SMTP credentials to test email sending.
+- The app asks users before generating a ticket, and only suggests it after repeated failed attempts to resolve the issue.
+
+## License
+
+MIT
