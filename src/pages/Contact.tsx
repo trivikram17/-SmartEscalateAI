@@ -1,14 +1,81 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Phone, MapPin, Send, MessageSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import emailjs from '@emailjs/browser';
 
 const Contact = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    subject: "",
+    message: ""
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    alert("Thank you for contacting us! We'll get back to you soon.");
+    setLoading(true);
+
+    try {
+      // EmailJS configuration
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      if (!serviceId || !templateId || !publicKey) {
+        throw new Error("EmailJS configuration missing. Please check your .env file.");
+      }
+
+      // Send email using EmailJS
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          from_name: `${formData.firstName} ${formData.lastName}`,
+          from_email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          to_name: "Smart Escalate AI Team",
+        },
+        publicKey
+      );
+
+      toast({
+        title: "Message Sent Successfully! ✅",
+        description: "Thank you for contacting us. We'll get back to you soon!",
+      });
+
+      // Reset form
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        subject: "",
+        message: ""
+      });
+    } catch (error) {
+      console.error("EmailJS Error:", error);
+      toast({
+        title: "Failed to Send Message ❌",
+        description: "Please try again later or contact us directly at support@smartescalate.ai",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,27 +106,55 @@ const Contact = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">First Name</label>
-                  <Input placeholder="John" required />
+                  <Input 
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    placeholder="John" 
+                    required 
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Last Name</label>
-                  <Input placeholder="Doe" required />
+                  <Input 
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    placeholder="Doe" 
+                    required 
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="text-sm font-medium mb-2 block">Email</label>
-                <Input type="email" placeholder="john.doe@example.com" required />
+                <Input 
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  type="email" 
+                  placeholder="john.doe@example.com" 
+                  required 
+                />
               </div>
 
               <div>
                 <label className="text-sm font-medium mb-2 block">Subject</label>
-                <Input placeholder="How can we help you?" required />
+                <Input 
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  placeholder="How can we help you?" 
+                  required 
+                />
               </div>
 
               <div>
                 <label className="text-sm font-medium mb-2 block">Message</label>
                 <Textarea 
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
                   placeholder="Tell us more about your inquiry..."
                   rows={6}
                   required
@@ -70,9 +165,10 @@ const Contact = () => {
                 type="submit" 
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
                 size="lg"
+                disabled={loading}
               >
                 <Send className="w-4 h-4 mr-2" />
-                Send Message
+                {loading ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </Card>

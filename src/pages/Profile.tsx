@@ -4,13 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { UserCircle, Mail, Calendar, MapPin, Briefcase, Phone, Camera } from "lucide-react";
+import { UserCircle, Mail, Calendar, MapPin, Briefcase, Phone, Camera, LogIn } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const userName = localStorage.getItem("userName") || "Guest User";
   const userEmail = localStorage.getItem("userEmail") || "guest@smartescalate.ai";
   const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+  // Only check email to determine if guest
+  const isGuest = userEmail === "guest@smartescalate.ai";
   
   const [isEditing, setIsEditing] = useState(false);
 
@@ -22,6 +26,30 @@ const Profile = () => {
           <h1 className="text-4xl font-bold mb-2">My Profile</h1>
           <p className="text-muted-foreground">Manage your personal information and preferences</p>
         </div>
+
+        {/* Guest User Notice */}
+        {isGuest && (
+          <Card className="p-4 mb-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <UserCircle className="w-8 h-8 text-blue-600" />
+                <div>
+                  <h3 className="font-semibold text-lg">You're browsing as a Guest</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Sign in to unlock chatbot access, save your preferences, and generate support tickets
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => navigate("/login")}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In Now
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Profile Card */}
         <Card className="p-8 mb-6">
@@ -44,6 +72,15 @@ const Profile = () => {
               <Badge variant="secondary" className="text-xs">
                 {userName === "Guest User" ? "Guest Account" : "Premium User"}
               </Badge>
+              {isGuest && (
+                <Button 
+                  onClick={() => navigate("/login")}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
             </div>
 
             {/* Info Section */}
@@ -91,7 +128,10 @@ const Profile = () => {
 
               <div className="flex gap-3">
                 {!isEditing ? (
-                  <Button onClick={() => setIsEditing(true)}>
+                  <Button 
+                    onClick={() => setIsEditing(true)}
+                    disabled={isGuest}
+                  >
                     Edit Profile
                   </Button>
                 ) : (
@@ -103,6 +143,11 @@ const Profile = () => {
                       Cancel
                     </Button>
                   </>
+                )}
+                {isGuest && (
+                  <p className="text-sm text-muted-foreground flex items-center">
+                    Sign in to edit your profile
+                  </p>
                 )}
               </div>
             </div>

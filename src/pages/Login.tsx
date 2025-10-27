@@ -23,17 +23,44 @@ export default function Login() {
 
     // Simulate API call
     setTimeout(() => {
-      // Store auth token (mock)
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", email);
+      // Get users database from localStorage
+      const usersData = localStorage.getItem("usersDB");
+      const users = usersData ? JSON.parse(usersData) : {};
       
-      toast({
-        title: "Login successful!",
-        description: "Welcome back to Smart Escalate AI",
-      });
+      // Check if user exists
+      if (users[email]) {
+        const user = users[email];
+        
+        // Check password (in real app, this would be hashed)
+        if (user.password === password) {
+          // Store auth token and current user info
+          localStorage.setItem("isAuthenticated", "true");
+          localStorage.setItem("userName", user.name);
+          localStorage.setItem("userEmail", email);
+          
+          toast({
+            title: "Login successful!",
+            description: `Welcome back, ${user.name}!`,
+          });
 
-      setIsLoading(false);
-      navigate("/");
+          setIsLoading(false);
+          navigate("/");
+        } else {
+          toast({
+            title: "Login failed",
+            description: "Invalid email or password",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+        }
+      } else {
+        toast({
+          title: "Login failed",
+          description: "No account found with this email. Please sign up.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
     }, 1500);
   };
 
@@ -48,14 +75,39 @@ export default function Login() {
 
     // Simulate API call
     setTimeout(() => {
-      // Store auth token (mock)
+      // Get users database from localStorage
+      const usersData = localStorage.getItem("usersDB");
+      const users = usersData ? JSON.parse(usersData) : {};
+      
+      // Check if user already exists
+      if (users[email]) {
+        toast({
+          title: "Sign up failed",
+          description: "An account with this email already exists. Please login.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Create new user
+      users[email] = {
+        name: name,
+        password: password, // In real app, this would be hashed
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Save to localStorage
+      localStorage.setItem("usersDB", JSON.stringify(users));
+      
+      // Store auth token and current user info
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("userName", name);
       localStorage.setItem("userEmail", email);
       
       toast({
         title: "Account created!",
-        description: "Your account has been created successfully.",
+        description: `Welcome, ${name}! Your account has been created successfully.`,
       });
 
       setIsLoading(false);
@@ -64,14 +116,14 @@ export default function Login() {
   };
 
   const handleSkipLogin = () => {
-    // Skip authentication and continue as guest
+    // Skip authentication and continue as guest (can browse, but can't chat)
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("userName", "Guest User");
     localStorage.setItem("userEmail", "guest@smartescalate.ai");
     
     toast({
-      title: "Welcome!",
-      description: "You're browsing as a guest",
+      title: "Welcome Guest!",
+      description: "You can browse the site. Login required to chat.",
     });
     
     navigate("/");

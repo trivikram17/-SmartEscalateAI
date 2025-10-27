@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,10 +59,15 @@ const services = [
 ];
 
 const AIServices = () => {
+  const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
   const [showQuickActions, setShowQuickActions] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { messages, tickets, isTyping, sendMessage, handleQuickAction } = useChatBot();
+
+  // Check if user is guest - only check email
+  const userEmail = localStorage.getItem("userEmail") || "";
+  const isGuest = userEmail === "guest@smartescalate.ai";
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -73,6 +79,12 @@ const AIServices = () => {
   }, [messages, isTyping]);
 
   const handleSend = () => {
+    // Redirect guest users to login
+    if (isGuest) {
+      navigate("/login");
+      return;
+    }
+
     if (inputValue.trim()) {
       sendMessage(inputValue);
       setInputValue("");
@@ -88,6 +100,12 @@ const AIServices = () => {
   };
 
   const handleQuickActionClick = (action: string) => {
+    // Redirect guest users to login
+    if (isGuest) {
+      navigate("/login");
+      return;
+    }
+
     handleQuickAction(action);
     setShowQuickActions(false);
   };
@@ -187,18 +205,25 @@ const AIServices = () => {
 
                 {/* Input Area */}
                 <div className="p-4 border-t border-border bg-card/50 backdrop-blur-sm">
+                  {isGuest && (
+                    <div className="mb-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                      <p className="text-xs text-yellow-700 dark:text-yellow-300 text-center">
+                        🔒 Please <button onClick={() => navigate("/login")} className="font-semibold underline hover:text-yellow-900 dark:hover:text-yellow-100">login</button> to chat with the AI assistant
+                      </p>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <Input
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Ask me anything..."
+                      placeholder={isGuest ? "Login required to chat..." : "Ask me anything..."}
                       className="flex-1 bg-background"
-                      disabled={isTyping}
+                      disabled={isTyping || isGuest}
                     />
                     <Button
                       onClick={handleSend}
-                      disabled={!inputValue.trim() || isTyping}
+                      disabled={!inputValue.trim() || isTyping || isGuest}
                       className="bg-[image:var(--gradient-primary)] hover:opacity-90 transition-opacity"
                     >
                       <Send className="h-4 w-4" />
