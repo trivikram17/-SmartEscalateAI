@@ -194,7 +194,7 @@ export function useChatBot() {
     return match ? match[0] : null;
   }, []);
 
-  const generateTicket = useCallback(async (userMessage: string, context: ChatState["conversationContext"]) => {
+  const generateTicket = useCallback(async (userMessage: string, context: ChatState["conversationContext"], currentMessages?: Message[]) => {
     const ticketNumber = `TKT-${Date.now().toString().slice(-6)}`;
     const sentiment = detectSentiment(userMessage);
     
@@ -242,8 +242,20 @@ export function useChatBot() {
       tickets: [...prev.tickets, ticket],
     }));
 
+    // Use provided messages or fallback to state.messages
+    // Add current user message to the conversation for email
+    const messagesToSend = currentMessages || [
+      ...state.messages,
+      {
+        id: Date.now().toString(),
+        role: 'user' as const,
+        content: userMessage,
+        timestamp: new Date(),
+      }
+    ];
+
     // Send ticket email and update ticket status
-    const emailSuccess = await sendTicketEmail(ticket, state.messages, context);
+    const emailSuccess = await sendTicketEmail(ticket, messagesToSend, context);
     
     if (emailSuccess) {
       // Update ticket with email sent status
@@ -276,6 +288,9 @@ export function useChatBot() {
       }
 
       // Generate HTML-formatted chat summary for better rendering in emails
+      console.log("📧 Generating email with messages:", messages.length, "messages");
+      console.log("📧 Messages:", messages.map(m => ({ role: m.role, content: m.content.substring(0, 50) })));
+      
       const chatSummary = messages
         .slice(-10) // Last 10 messages
         .map((msg, index) => {
@@ -425,7 +440,18 @@ export function useChatBot() {
             userName: currentName,
           };
           
-          const ticket = await generateTicket(userMessage, updatedContext);
+          // Create a complete messages array including the current user message
+          const completeMessages: Message[] = [
+            ...state.messages,
+            {
+              id: Date.now().toString(),
+              role: 'user' as const,
+              content: userMessage,
+              timestamp: new Date(),
+            }
+          ];
+          
+          const ticket = await generateTicket(userMessage, updatedContext, completeMessages);
           
           response = `✅ Support ticket generated successfully!\n\n📋 **Ticket Details:**\n- Ticket Number: ${ticket.ticketNumber}\n- Priority: ${ticket.priority.toUpperCase()}\n- Status: ${ticket.status}\n- Company: ${currentCompany}\n- From: ${currentName} (${currentEmail})\n\n📧 An email has been sent from your email address (${currentEmail}) to ${currentCompany}'s customer care team with the complete chat summary. They will review your issue and respond directly to your email.\n\nYou can track your ticket status in the tickets section above.`;
           
