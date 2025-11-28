@@ -45,7 +45,7 @@ const Index = () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white">
         {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10" aria-hidden="true">
           <div className="absolute top-0 -left-4 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl animate-blob" />
           <div className="absolute top-0 -right-4 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl animate-blob animation-delay-2000" />
           <div className="absolute -bottom-8 left-20 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl animate-blob animation-delay-4000" />
@@ -80,19 +80,21 @@ const Index = () => {
                 size="lg"
                 className="bg-white text-purple-600 hover:bg-gray-100 shadow-2xl hover:shadow-white/20 transition-all text-lg px-8 py-6 group"
                 onClick={() => navigate("/ai-services")}
+                aria-label="Start chatting with AI assistant"
               >
-                <PlayCircle className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                <PlayCircle className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" aria-hidden="true" />
                 Start Chatting Now
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Button>
               <Button 
                 size="lg"
                 className="bg-white/20 border-2 border-white text-white hover:bg-white hover:text-purple-600 backdrop-blur-md shadow-xl hover:shadow-white/30 transition-all text-lg px-8 py-6 group font-semibold"
                 onClick={() => navigate("/about")}
+                aria-label="Learn more about Smart Escalate AI"
               >
-                <Globe className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                <Globe className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" aria-hidden="true" />
                 Learn More
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Button>
             </div>
 
@@ -119,8 +121,8 @@ const Index = () => {
         </div>
 
         {/* Wave Separator */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+        <div className="absolute bottom-0 left-0 right-0 z-0">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full" aria-hidden="true" role="presentation">
             <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" 
                   fill="currentColor" 
                   className="text-background dark:text-background" />
@@ -129,7 +131,7 @@ const Index = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="max-w-7xl mx-auto px-6 -mt-12 mb-12 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-8 rounded-2xl border-none shadow-xl backdrop-blur-sm bg-card/95 hover:shadow-2xl hover:scale-105 transition-all duration-300 group overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20 dark:to-transparent" />
@@ -173,7 +175,7 @@ const Index = () => {
       </div>
 
       {/* Explore Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold mb-1">Explore Our Platform</h2>

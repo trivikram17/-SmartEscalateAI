@@ -118,27 +118,33 @@ export function useChatBot() {
       "send ticket", "need ticket", "want ticket", "get ticket"
     ];
     
+    // Note: "book ticket" is intentionally NOT included - it's too generic and might conflict with travel tickets
+    
     const lowerText = text.toLowerCase().trim();
     
     // Check for explicit ticket keywords
     const hasExplicitKeyword = ticketKeywords.some((keyword) => lowerText.includes(keyword));
     
-    // Check if last bot message was asking about generating a ticket (more flexible)
-    const botAskedAboutTicket = lastBotMessage?.toLowerCase().includes("support ticket") || 
-                                 lastBotMessage?.toLowerCase().includes("escalate") ||
-                                 lastBotMessage?.toLowerCase().includes("customer care team");
+    // Check if last bot message was asking about generating a ticket (must be explicit offer)
+    const botAskedAboutTicket = lastBotMessage?.toLowerCase().includes("would you like me to generate a support ticket") || 
+                                 lastBotMessage?.toLowerCase().includes("generate a support ticket") ||
+                                 lastBotMessage?.toLowerCase().includes("shall i generate a ticket");
     
     // If bot asked about ticket and user says yes/sure/okay, treat as confirmation
     const confirmationKeywords = ["yes", "yeah", "yep", "yeas", "sure", "okay", "ok", "please", "go ahead", "do it"];
     const isConfirmation = confirmationKeywords.some((keyword) => lowerText === keyword || lowerText.includes(keyword));
     
     console.log("🎫 Ticket Detection:", {
+      userMessage: text,
       hasExplicitKeyword,
       botAskedAboutTicket,
       isConfirmation,
       willGenerateTicket: hasExplicitKeyword || (botAskedAboutTicket && isConfirmation)
     });
     
+    // Only generate ticket if:
+    // 1. User explicitly uses ticket keywords, OR
+    // 2. Bot offered to generate ticket AND user confirmed
     return hasExplicitKeyword || (botAskedAboutTicket && isConfirmation);
   }, []);
 
@@ -336,27 +342,44 @@ export function useChatBot() {
         recipientEmail = companyEmails[detectedCompany];
       }
 
-      // Send email
+      // Prepare email data
+      const emailData = {
+        from_name: context.userName || "User",
+        from_email: context.userEmail || "user@example.com",
+        reply_to: context.userEmail || "user@example.com",
+        ticket_number: ticket.ticketNumber,
+        subject: context.mainIssue || ticket.description.substring(0, 100),
+        priority: ticket.priority.toUpperCase(),
+        category: ticket.category,
+        company: context.detectedCompany || "Not specified",
+        chat_summary: chatSummary,
+        created_at: ticket.createdAt.toLocaleString(),
+      };
+
+      // Send email to company
       await emailjs.send(
         serviceId,
         templateId,
         {
+          ...emailData,
           to_email: recipientEmail,
-          from_name: context.userName || "User",
-          from_email: context.userEmail || "user@example.com",
-          reply_to: context.userEmail || "user@example.com",
-          ticket_number: ticket.ticketNumber,
-          subject: context.mainIssue || ticket.description.substring(0, 100),
-          priority: ticket.priority.toUpperCase(),
-          category: ticket.category,
-          company: context.detectedCompany || "Not specified",
-          chat_summary: chatSummary,
-          created_at: ticket.createdAt.toLocaleString(),
         },
         publicKey
       );
+      console.log("✅ Ticket email sent to company:", recipientEmail);
 
-      console.log("✅ Ticket email sent successfully to:", recipientEmail);
+      // Send copy to user (so they see it in their Gmail inbox)
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          ...emailData,
+          to_email: context.userEmail || "user@example.com",
+        },
+        publicKey
+      );
+      console.log("✅ Copy sent to user:", context.userEmail);
+
       return true;
     } catch (error) {
       console.error("Failed to send ticket email:", error);
@@ -452,6 +475,9 @@ export function useChatBot() {
           ];
           
           const ticket = await generateTicket(userMessage, updatedContext, completeMessages);
+          
+          console.log("✅ Ticket created:", ticket);
+          console.log("📊 Current tickets in state:", state.tickets);
           
           response = `✅ Support ticket generated successfully!\n\n📋 **Ticket Details:**\n- Ticket Number: ${ticket.ticketNumber}\n- Priority: ${ticket.priority.toUpperCase()}\n- Status: ${ticket.status}\n- Company: ${currentCompany}\n- From: ${currentName} (${currentEmail})\n\n📧 An email has been sent from your email address (${currentEmail}) to ${currentCompany}'s customer care team with the complete chat summary. They will review your issue and respond directly to your email.\n\nYou can track your ticket status in the tickets section above.`;
           
