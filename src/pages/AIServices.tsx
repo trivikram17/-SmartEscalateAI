@@ -62,6 +62,7 @@ const AIServices = () => {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
   const [showQuickActions, setShowQuickActions] = useState(true);
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { messages, tickets, isTyping, sendMessage, handleQuickAction } = useChatBot();
 
@@ -235,8 +236,10 @@ const AIServices = () => {
               {/* Tickets Sidebar */}
               <Card className="flex flex-col shadow-[var(--shadow-elevated)] border-primary/10 overflow-hidden" style={{ height: '600px' }}>
                 <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm">
-                  <h3 className="text-lg font-semibold">Generated Tickets</h3>
-                  <p className="text-xs text-muted-foreground">Auto-escalation in action</p>
+                  <div>
+                    <h3 className="text-lg font-semibold">Generated Tickets</h3>
+                    <p className="text-xs text-muted-foreground">Auto-escalation in action</p>
+                  </div>
                 </div>
                 
                 <ScrollArea className="flex-1 p-4">
@@ -252,7 +255,14 @@ const AIServices = () => {
                   ) : (
                     <div className="space-y-4">
                       {tickets.map((ticket) => (
-                        <TicketCard key={ticket.id} ticket={ticket} />
+                        <TicketCard 
+                          key={ticket.id} 
+                          ticket={ticket} 
+                          showResolveToggle={true}
+                          onStatusChange={() => {
+                            // Tickets will auto-refresh via real-time subscription
+                          }}
+                        />
                       ))}
                     </div>
                   )}
@@ -262,6 +272,8 @@ const AIServices = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Logo from "@/components/Logo";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 import emailjs from "@emailjs/browser";
 
 export default function Login() {
@@ -21,23 +22,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Reset all user data (for testing/demo purposes)
-  const resetAllUserData = () => {
-    // Clear authentication data
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("usersDB");
-    
-    // Keep theme preference
-    const theme = localStorage.getItem("theme");
-    
-    toast({
-      title: "System Reset Complete",
-      description: "All user accounts have been cleared. Everyone must register as new users.",
-      duration: 3000,
-    });
-  };
+
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,47 +32,66 @@ export default function Login() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    // Simulate API call
-    setTimeout(() => {
-      // Get users database from localStorage
-      const usersData = localStorage.getItem("usersDB");
-      const users = usersData ? JSON.parse(usersData) : {};
-      
-      // Check if user exists
-      if (users[email]) {
-        const user = users[email];
-        
-        // Check password (in real app, this would be hashed)
-        if (user.password === password) {
-          // Store auth token and current user info
-          localStorage.setItem("isAuthenticated", "true");
-          localStorage.setItem("userName", user.name);
-          localStorage.setItem("userEmail", email);
-          
-          toast({
-            title: "Login successful!",
-            description: `Welcome back, ${user.name}!`,
-          });
+    try {
+      if (!supabase) {
+        throw new Error("Database not configured");
+      }
 
-          setIsLoading(false);
-          navigate("/");
-        } else {
-          toast({
-            title: "Login failed",
-            description: "Invalid email or password",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-        }
-      } else {
+      // Query user from Supabase
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (error || !users) {
         toast({
           title: "Login failed",
           description: "No account found with this email. Please sign up.",
           variant: "destructive",
         });
         setIsLoading(false);
+        return;
       }
-    }, 1500);
+
+      // Check password (in production, use proper password hashing)
+      if (users.password !== password) {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Update last login time
+      await supabase
+        .from('users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('email', email);
+
+      // Store auth token and current user info
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("userName", users.name);
+      localStorage.setItem("userEmail", email);
+      
+      toast({
+        title: "Login successful!",
+        description: `Welcome back, ${users.name}!`,
+      });
+
+      setIsLoading(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   };
 
   const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
@@ -99,14 +103,19 @@ export default function Login() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    // Simulate API call
-    setTimeout(() => {
-      // Get users database from localStorage
-      const usersData = localStorage.getItem("usersDB");
-      const users = usersData ? JSON.parse(usersData) : {};
-      
+    try {
+      if (!supabase) {
+        throw new Error("Database not configured");
+      }
+
       // Check if user already exists
-      if (users[email]) {
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', email)
+        .single();
+
+      if (existingUser) {
         toast({
           title: "Sign up failed",
           description: "An account with this email already exists. Please login.",
@@ -115,17 +124,21 @@ export default function Login() {
         setIsLoading(false);
         return;
       }
-      
-      // Create new user
-      users[email] = {
-        name: name,
-        password: password, // In real app, this would be hashed
-        createdAt: new Date().toISOString(),
-      };
-      
-      // Save to localStorage
-      localStorage.setItem("usersDB", JSON.stringify(users));
-      
+
+      // Create new user in Supabase
+      const { data: newUser, error } = await supabase
+        .from('users')
+        .insert([{
+          email: email,
+          name: name,
+          password: password, // In production, use proper password hashing
+          created_at: new Date().toISOString(),
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
       // Store auth token and current user info
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("userName", name);
@@ -138,7 +151,15 @@ export default function Login() {
 
       setIsLoading(false);
       navigate("/");
-    }, 1500);
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Sign up failed",
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   };
 
   const handleSkipLogin = () => {
@@ -158,25 +179,32 @@ export default function Login() {
   const handleForgotPassword = async () => {
     setIsLoading(true);
     
-    // Check if user exists
-    const usersData = localStorage.getItem("usersDB");
-    const users = usersData ? JSON.parse(usersData) : {};
-    
-    if (!users[resetEmail]) {
-      toast({
-        title: "User not found",
-        description: "No account found with this email address.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    // Generate 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(code);
-    
     try {
+      if (!supabase) {
+        throw new Error("Database not configured");
+      }
+
+      // Check if user exists in Supabase
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', resetEmail)
+        .single();
+      
+      if (error || !user) {
+        toast({
+          title: "User not found",
+          description: "No account found with this email address.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Generate 6-digit code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedCode(code);
+      
       // Send reset code via EmailJS
       await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID!,
@@ -223,9 +251,8 @@ export default function Login() {
         description: "Please try again later.",
         variant: "destructive",
       });
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleVerifyCode = () => {
@@ -244,7 +271,7 @@ export default function Login() {
     }
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (newPassword.length < 6) {
       toast({
         title: "Password too short",
@@ -254,25 +281,39 @@ export default function Login() {
       return;
     }
     
-    // Update password in localStorage
-    const usersData = localStorage.getItem("usersDB");
-    const users = usersData ? JSON.parse(usersData) : {};
-    
-    users[resetEmail].password = newPassword;
-    localStorage.setItem("usersDB", JSON.stringify(users));
-    
-    toast({
-      title: "Password reset successful!",
-      description: "You can now login with your new password.",
-    });
-    
-    // Reset dialog
-    setShowForgotPassword(false);
-    setResetStep("email");
-    setResetEmail("");
-    setResetCode("");
-    setNewPassword("");
-    setGeneratedCode("");
+    try {
+      if (!supabase) {
+        throw new Error("Database not configured");
+      }
+
+      // Update password in Supabase
+      const { error } = await supabase
+        .from('users')
+        .update({ password: newPassword })
+        .eq('email', resetEmail);
+
+      if (error) throw error;
+
+      toast({
+        title: "Password reset successful!",
+        description: "You can now login with your new password.",
+      });
+      
+      // Reset dialog
+      setShowForgotPassword(false);
+      setResetStep("email");
+      setResetEmail("");
+      setResetCode("");
+      setNewPassword("");
+      setGeneratedCode("");
+    } catch (error) {
+      console.error("Password reset error:", error);
+      toast({
+        title: "Reset failed",
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -289,18 +330,6 @@ export default function Login() {
         </CardHeader>
         
         <CardContent>
-          {/* Temporary Reset Button for Demo */}
-          <div className="mb-4 text-center">
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={resetAllUserData}
-              className="text-xs"
-            >
-              🗑️ Clear All Data
-            </Button>
-          </div>
-          
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>

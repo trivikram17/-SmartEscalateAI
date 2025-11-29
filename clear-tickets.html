@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Tickets</title>
+</head>
+<body>
+    <h1>Clear All Tickets from Database</h1>
+    <button onclick="clearTickets()" style="padding: 20px; font-size: 18px; background: red; color: white; border: none; cursor: pointer;">
+        Click to Clear All Tickets
+    </button>
+    <p id="status"></p>
+    
+    <script>
+        async function clearTickets() {
+            const status = document.getElementById('status');
+            status.textContent = 'Deleting tickets...';
+            
+            try {
+                const response = await fetch('https://kjryedtwzqpsnfrtghtk.supabase.co/rest/v1/tickets?id=gte.0', {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqcnllZHR3enFwc25mcnRnaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTY0MjgsImV4cCI6MjA3OTgzMjQyOH0.zfF7a1vY8KFswICw5hBteBE-0jZY00uuDanjay38SUA',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqcnllZHR3enFwc25mcnRnaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNTY0MjgsImV4cCI6MjA3OTgzMjQyOH0.zfF7a1vY8KFswICw5hBteBE-0jZY00uuDanjay38SUA',
+                        'Prefer': 'return=minimal'
+                    }
+                });
+                
+                if (response.ok) {
+                    status.textContent = '✅ All tickets deleted! Redirecting...';
+                    status.style.color = 'green';
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:8085';
+                    }, 1000);
+                } else {
+                    status.textContent = '❌ Failed to delete tickets: ' + response.status;
+                    status.style.color = 'red';
+                }
+            } catch (error) {
+                status.textContent = '❌ Error: ' + error.message;
+                status.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>

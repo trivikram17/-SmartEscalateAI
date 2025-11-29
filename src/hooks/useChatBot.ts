@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Message } from "@/components/ChatMessage";
 import { Ticket } from "@/components/TicketCard";
 import { toast } from "sonner";
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import emailjs from '@emailjs/browser';
+import { supabase } from "@/lib/supabase";
 
 interface ChatState {
   messages: Message[];
@@ -80,6 +81,106 @@ export function useChatBot() {
       userName: loggedInUserName,   // Initialize with logged-in user's name
     },
   });
+
+  // Load tickets from Supabase on mount and subscribe to real-time updates
+  useEffect(() => {
+    // Clear old localStorage tickets ONCE per session
+    const hasCleared = sessionStorage.getItem('ticketsCleared');
+    if (!hasCleared) {
+      localStorage.removeItem('chatTickets');
+      localStorage.removeItem('tickets');
+      sessionStorage.setItem('ticketsCleared', 'true');
+      console.log('✅ One-time clear of old localStorage tickets');
+    }
+    
+    const loadTickets = async () => {
+      if (!supabase) {
+        console.warn('Supabase not configured, tickets will save to localStorage only');
+        setState((prev) => ({
+          ...prev,
+          tickets: [],
+        }));
+        return;
+      }
+      
+      // Get current user's email
+      const userEmail = localStorage.getItem('userEmail');
+      if (!userEmail) {
+        console.warn('No user logged in, cannot load tickets');
+        setState((prev) => ({
+          ...prev,
+          tickets: [],
+        }));
+        return;
+      }
+      
+      try {
+        console.log('🔄 Loading tickets for user:', userEmail);
+        const { data, error } = await supabase
+          .from('tickets')
+          .select('*')
+          .eq('user_email', userEmail)  // Filter by current user
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        console.log('✅ Loaded tickets from Supabase:', data);
+        
+        if (data) {
+          // Convert Supabase format to app format
+          const convertedTickets: Ticket[] = data.map(dbTicket => ({
+            id: dbTicket.id,
+            ticketNumber: dbTicket.ticket_number,
+            status: dbTicket.status as any,
+            category: dbTicket.category,
+            priority: dbTicket.priority as any,
+            description: dbTicket.description,
+            subject: dbTicket.subject || undefined,
+            createdAt: new Date(dbTicket.created_at),
+            emailSent: dbTicket.email_sent,
+            emailSentAt: dbTicket.email_sent_at ? new Date(dbTicket.email_sent_at) : undefined,
+            companyEmail: dbTicket.company_email || undefined,
+            assignedTo: dbTicket.assigned_to || undefined,
+          }));
+          
+          console.log('✅ Setting state with tickets:', convertedTickets);
+          setState((prev) => ({
+            ...prev,
+            tickets: convertedTickets,
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading tickets from Supabase:', error);
+      }
+    };
+    
+    loadTickets();
+    
+    // Subscribe to real-time ticket updates for current user only
+    if (supabase) {
+      const userEmail = localStorage.getItem('userEmail');
+      
+      const subscription = supabase
+        .channel('user-tickets-changes')
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'tickets',
+            filter: `user_email=eq.${userEmail}`  // Only listen to current user's tickets
+          },
+          (payload) => {
+            console.log('🔔 Real-time ticket update:', payload);
+            loadTickets(); // Reload tickets when any change occurs
+          }
+        )
+        .subscribe();
+      
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, []);
 
   const addMessage = useCallback((message: Omit<Message, "id" | "timestamp">) => {
     const newMessage: Message = {
@@ -201,8 +302,8 @@ export function useChatBot() {
   }, []);
 
   const generateTicket = useCallback(async (userMessage: string, context: ChatState["conversationContext"], currentMessages?: Message[]) => {
-    const ticketNumber = `TKT-${Date.now().toString().slice(-6)}`;
     const sentiment = detectSentiment(userMessage);
+    const ticketNumber = `TKT-${Date.now().toString().slice(-6)}`;
     
     const priority = sentiment === "urgent" ? "urgent" : 
                     sentiment === "frustrated" ? "high" :
@@ -230,10 +331,11 @@ export function useChatBot() {
     };
     const companyEmail = (detectedCompany && companyEmails[detectedCompany]) || "support@smartescalate.ai";
 
+    // Create the ticket object that matches TicketCard interface
     const ticket: Ticket = {
       id: Math.random().toString(36).substr(2, 9),
       ticketNumber,
-      status: "received",
+      status: "pending",  // Changed from "received" to "pending"
       category: context.issueCategory || "General Support",
       priority,
       description: userMessage,
@@ -243,10 +345,7 @@ export function useChatBot() {
       companyEmail: companyEmail,
     };
 
-    setState((prev) => ({
-      ...prev,
-      tickets: [...prev.tickets, ticket],
-    }));
+    console.log("✅ Ticket created:", ticket);
 
     // Use provided messages or fallback to state.messages
     // Add current user message to the conversation for email
@@ -264,15 +363,87 @@ export function useChatBot() {
     const emailSuccess = await sendTicketEmail(ticket, messagesToSend, context);
     
     if (emailSuccess) {
-      // Update ticket with email sent status
+      ticket.emailSent = true;
+      ticket.emailSentAt = new Date();
+    }
+
+    // Save ticket to Supabase (global storage)
+    if (!supabase) {
+      console.warn('Supabase not configured, using localStorage fallback');
       setState((prev) => ({
         ...prev,
-        tickets: prev.tickets.map(t => 
-          t.id === ticket.id 
-            ? { ...t, emailSent: true, emailSentAt: new Date() }
-            : t
-        ),
+        tickets: [ticket, ...prev.tickets],
       }));
+      
+      const existingTickets = JSON.parse(localStorage.getItem('chatTickets') || '[]');
+      localStorage.setItem('chatTickets', JSON.stringify([ticket, ...existingTickets]));
+      return ticket;
+    }
+    
+    try {
+      // Get user info from localStorage
+      const userEmail = localStorage.getItem('userEmail') || context.userEmail || 'unknown@user.com';
+      const userName = localStorage.getItem('userName') || context.userName || 'Unknown User';
+      
+      const { data, error } = await supabase
+        .from('tickets')
+        .insert([{
+          ticket_number: ticket.ticketNumber,
+          status: ticket.status,
+          category: ticket.category,
+          priority: ticket.priority,
+          description: ticket.description,
+          subject: ticket.subject || null,
+          user_email: userEmail,
+          user_name: userName,
+          company_email: ticket.companyEmail || null,
+          email_sent: ticket.emailSent,
+          email_sent_at: ticket.emailSentAt?.toISOString() || null,
+        }])
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      
+      console.log('✅ Ticket saved to Supabase:', data);
+      
+      // Update local state with the ticket from Supabase (includes generated ID)
+      if (data) {
+        const supabaseTicket: Ticket = {
+          id: data.id,
+          ticketNumber: data.ticket_number,
+          status: data.status as any,
+          category: data.category,
+          priority: data.priority as any,
+          description: data.description,
+          subject: data.subject || undefined,
+          createdAt: new Date(data.created_at),
+          emailSent: data.email_sent,
+          emailSentAt: data.email_sent_at ? new Date(data.email_sent_at) : undefined,
+          companyEmail: data.company_email || undefined,
+        };
+        
+        setState((prev) => ({
+          ...prev,
+          tickets: [supabaseTicket, ...prev.tickets],
+        }));
+        
+        return supabaseTicket;
+      }
+    } catch (error) {
+      console.error('Error saving ticket to Supabase:', error);
+      // Fallback to localStorage if Supabase fails
+      toast.error('Could not save to cloud, saved locally', {
+        description: 'Ticket saved to your browser only'
+      });
+      
+      setState((prev) => ({
+        ...prev,
+        tickets: [ticket, ...prev.tickets],
+      }));
+      
+      const existingTickets = JSON.parse(localStorage.getItem('chatTickets') || '[]');
+      localStorage.setItem('chatTickets', JSON.stringify([ticket, ...existingTickets]));
     }
 
     return ticket;
@@ -707,6 +878,56 @@ You: "Perfect! I'm generating the support ticket for you now..."
             status: error?.status,
           });
           response = `I'm experiencing technical difficulties connecting to my AI service (${aiProvider}). Error: ${error?.message || 'Unknown error'}. To ensure you get immediate help, I recommend creating a support ticket. Would you like me to do that for you?`;
+        }
+        
+        // After getting AI response, check if AI said it's generating a ticket
+        // If so, actually generate the ticket
+        if (response.toLowerCase().includes("i'm generating the support ticket") || 
+            response.toLowerCase().includes("i'm generating the ticket") ||
+            response.toLowerCase().includes("generating the support ticket for you")) {
+          
+          console.log("🎫 AI mentioned generating ticket - actually generating it now!");
+          
+          const currentCompany = context.detectedCompany || detectedCompany;
+          const currentEmail = context.userEmail;
+          const currentName = context.userName;
+          
+          if (currentCompany) {
+            // Extract main issue from conversation
+            const userMessages = state.messages.filter(m => m.role === "user");
+            const mainIssueText = userMessages.length > 0 
+              ? userMessages[0].content.substring(0, 150) 
+              : userMessage.substring(0, 150);
+
+            const updatedContext = {
+              ...context,
+              detectedCompany: currentCompany,
+              mainIssue: mainIssueText,
+              userEmail: currentEmail,
+              userName: currentName,
+            };
+            
+            const completeMessages: Message[] = [
+              ...state.messages,
+              {
+                id: Date.now().toString(),
+                role: 'user' as const,
+                content: userMessage,
+                timestamp: new Date(),
+              }
+            ];
+            
+            const ticket = await generateTicket(userMessage, updatedContext, completeMessages);
+            
+            console.log("✅ Ticket actually created:", ticket);
+            
+            // Append ticket details to the response
+            response += `\n\n📋 **Ticket Details:**\n- Ticket Number: ${ticket.ticketNumber}\n- Priority: ${ticket.priority.toUpperCase()}\n- Status: ${ticket.status}\n- Company: ${currentCompany}\n\nYou can track your ticket in the sidebar.`;
+            
+            toast.success(`Ticket ${ticket.ticketNumber} created`, {
+              description: `Email sent to ${currentCompany} customer care`,
+            });
+          }
         }
       }
 
