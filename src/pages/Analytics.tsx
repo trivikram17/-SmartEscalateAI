@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTicketManager } from "@/hooks/useTicketManager";
 import { TrendingUp, TrendingDown, Activity, Clock, CheckCircle2, AlertCircle, RefreshCw, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const Analytics = () => {
   const { 
@@ -175,16 +176,6 @@ const Analytics = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <select
-                        value={ticket.status}
-                        onChange={(e) => handleStatusChange(ticket.id, e.target.value as any)}
-                        className="text-xs px-2 py-1 rounded border bg-background"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                        <option value="closed">Closed</option>
-                      </select>
                       <Badge variant={
                         (ticket.priority === "critical" || ticket.priority === "urgent") ? "destructive" :
                         ticket.priority === "high" ? "default" :
@@ -192,12 +183,19 @@ const Analytics = () => {
                       }>
                         {ticket.priority}
                       </Badge>
-                      <Badge variant={
-                        ticket.status === "resolved" ? "default" : 
-                        ticket.status === "in-progress" ? "secondary" : "outline"
-                      }>
-                        {ticket.status}
-                      </Badge>
+                      <div className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium",
+                        ticket.status === 'resolved' 
+                          ? "bg-green-600 text-white" 
+                          : "bg-yellow-500 text-white"
+                      )}>
+                        {ticket.status === 'resolved' ? (
+                          <CheckCircle2 className="h-4 w-4" />
+                        ) : (
+                          <Clock className="h-4 w-4" />
+                        )}
+                        <span>{ticket.status === 'resolved' ? 'Resolved' : 'Pending'}</span>
+                      </div>
                       <span className="text-sm text-muted-foreground w-20 text-right">
                         {getTimeAgo(ticket.updatedAt || ticket.createdAt)}
                       </span>

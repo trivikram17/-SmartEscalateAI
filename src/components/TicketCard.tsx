@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export interface Ticket {
   id: string;
   ticketNumber: string;
-  status: "pending" | "in-progress" | "resolved" | "closed";
+  status: "pending" | "resolved";
   category: string;
   priority: "low" | "medium" | "high" | "urgent" | "critical";
   description: string;
@@ -33,20 +33,10 @@ const statusConfig = {
     icon: Clock,
     color: "text-yellow-600",
   },
-  "in-progress": {
-    label: "In Progress",
-    icon: AlertCircle,
-    color: "text-blue-600",
-  },
   resolved: {
     label: "Resolved",
     icon: CheckCircle2,
     color: "text-green-600",
-  },
-  closed: {
-    label: "Closed",
-    icon: CheckCircle2,
-    color: "text-gray-600",
   },
 };
 
@@ -59,9 +49,9 @@ const priorityVariants = {
 } as const;
 
 export function TicketCard({ ticket, showResolveToggle = false, onStatusChange }: TicketCardProps) {
-  // Normalize status to ensure it matches our config
-  const normalizedStatus = (ticket.status === "received" ? "pending" : ticket.status) as keyof typeof statusConfig;
-  const statusInfo = statusConfig[normalizedStatus] || statusConfig.pending;
+  // Normalize status to ensure it matches our config (only pending or resolved)
+  const normalizedStatus = ticket.status === "pending" ? "pending" : "resolved";
+  const statusInfo = statusConfig[normalizedStatus];
   const StatusIcon = statusInfo.icon;
 
   const handleResolveToggle = async (checked: boolean) => {
@@ -109,9 +99,14 @@ export function TicketCard({ ticket, showResolveToggle = false, onStatusChange }
         </div>
         
         <div className="flex items-center gap-3">
-          <div className={cn("flex items-center gap-1.5", statusInfo.color)}>
-            <StatusIcon className="h-5 w-5" />
-            <span className="text-sm font-medium">{statusInfo.label}</span>
+          <div className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium",
+            ticket.status === 'resolved' 
+              ? "bg-green-600 text-white" 
+              : "bg-yellow-500 text-white"
+          )}>
+            <StatusIcon className="h-4 w-4" />
+            <span>{statusInfo.label}</span>
           </div>
           
           {showResolveToggle && (
